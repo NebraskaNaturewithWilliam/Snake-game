@@ -87,6 +87,7 @@ button{cursor:pointer;font-family:Inter,sans-serif;transition:.2s}
 <div class="actions">
  <button class="secondary" id="pause">Ⅱ PAUSE</button>
  <button class="secondary" id="restart">↻ RESTART</button>
+ <button class="secondary" id="color">✦ COLOR</button>
 </div>
 
 <div class="instructions">WASD / ARROWS TO MOVE • SPACE TO PAUSE</div>
@@ -113,6 +114,35 @@ let score=0;
 let best=Number(localStorage.getItem("neonBest"))||0;
 let running=false,paused=false,over=false;
 let last=0,elapsed=0,bonusTime=0,particles=[];
+
+const palettes=[
+ {mid:"#38d9ff",light:"#bafaff",dark:"#3877ff"},
+ {mid:"#ff4fd8",light:"#ffb3f0",dark:"#c41ea8"},
+ {mid:"#5cff7a",light:"#c8ffd4",dark:"#1ebe4a"},
+ {mid:"#ffb347",light:"#ffe0a3",dark:"#ff7a1a"},
+ {mid:"#b18aff",light:"#e0cfff",dark:"#7a4dff"}
+];
+let paletteIndex=0;
+
+function currentPalette(){
+ return palettes[paletteIndex];
+}
+
+function applyPalette(){
+ const pal=currentPalette();
+ const logo=document.querySelector(".logo span");
+ logo.style.color=pal.mid;
+ logo.style.textShadow="0 0 15px "+pal.mid;
+ document.getElementById("score").style.color=pal.mid;
+ const btn=document.getElementById("color");
+ btn.style.borderColor=pal.mid;
+ btn.style.color=pal.mid;
+}
+
+function cyclePalette(){
+ paletteIndex=(paletteIndex+1)%palettes.length;
+ applyPalette();
+}
 
 document.getElementById("best").textContent=String(best).padStart(3,"0");
 
@@ -432,11 +462,12 @@ function drawSnake(){
 
   ctx.save();
   ctx.shadowBlur=i===0?24:13;
-  ctx.shadowColor="#38d9ff";
+  const pal=currentPalette();
+  ctx.shadowColor=pal.mid;
 
   const g=ctx.createLinearGradient(x,y,x+25,y+25);
-  g.addColorStop(0,i===0?"#bafaff":"#38d9ff");
-  g.addColorStop(1,"#3877ff");
+  g.addColorStop(0,i===0?pal.light:pal.mid);
+  g.addColorStop(1,pal.dark);
 
   ctx.fillStyle=g;
   ctx.beginPath();
@@ -521,6 +552,13 @@ function loop(time){
 document.getElementById("start").onclick=reset;
 document.getElementById("restart").onclick=reset;
 document.getElementById("pause").onclick=togglePause;
+
+const colorBtn=document.getElementById("color");
+colorBtn.addEventListener("pointerdown",e=>e.preventDefault());
+colorBtn.addEventListener("click",()=>{
+ cyclePalette();
+ colorBtn.blur();
+});
 
 // ---------- INITIAL DISPLAY ----------
 
